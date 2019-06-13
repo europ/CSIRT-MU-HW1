@@ -1,0 +1,42 @@
+==========================================================================
+
+                            Zadání
+
+==========================================================================
+
+1. nainstalovat OS Debian [1]
+2. pomocí systému Ansible [2] popsat automatické:
+   2.1 vytvoření uživatelského účtu s názvem "csirt",
+   2.2 přidání veřejného SSH klíče tomuto uživateli,
+   2.3 nastavení lokálního firewallu pro příchozí spojení na SSH a HTTP
+       pouze ze sítě MU
+3. výsledný Ansible playbook se všemi součástmi mi poslat zašifrovaným
+   mailem na adresu email@example.com.
+
+==========================================================================
+
+V rámci instalce OS Debian zvolete poslední 64-bitovou stable
+verzi. Nainstalujte čistě anglickou verzi systému, nicméně s lokální
+timezone. Volte dostatečně silná hesla pro oba uživatelské účty
+(root i csirt).
+
+Před psaním samotného Ansible playbooku doporučuji si vše nastavit ručně
+a otestovat a až pak se pustit do přepisování do Ansible. Pro nastavení
+SSH klíče si prvně budete muset vytvořit SSH key pair s passphrase.
+Pozor! ansiblem se bude kopírovat pouze public část klíče. Pro nastavení
+iptables použijte oficiální balík netfilter-persistent, který zajistí
+trvalé nastavení i po restartu serveru.
+
+Pro zašifrování mailu použijte technologii PGP [3]. Můj veřejný PGP klíč
+(Key ID 12345678) pro mailovou adresu email@example.com naleznete na
+veřejných PGP key serverech jako je třeba [4]. Jako nástroj pro
+šifrování mailů doporučuji použít Thunderbird + Enigmail. Ansible
+playbook se všemi součástmi pošlete jako gzip tarball a nezapoměňte mail
+zašifrovat i s přílohou.
+
+==========================================================================
+
+[1] https://www.debian.org
+[2] https://www.ansible.com/get-started
+[3] https://cs.wikipedia.org/wiki/Pretty_Good_Privacy
+[4] https://keyserver.ubuntu.com
