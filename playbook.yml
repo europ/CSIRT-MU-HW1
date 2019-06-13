@@ -1,0 +1,145 @@
+---
+
+# 1) Debian GNU/Linux 9.9
+# 2) superuser 'root' has a public key '/root/.ssh/id_rsa.pub' (in his /root (HOME) directory, generated via ssh-keygen)
+# 3) run as 'root' superuser: ansible-playbook FILE.yml
+
+- hosts: localhost
+  connection: local
+
+
+  tasks:
+
+
+    # install required APT packages
+
+
+    - name: 'apt update && apt install netfilter-persistent'
+      apt:
+        name: netfilter-persistent # 'netfilter-persistent' used for persistent IP rules saving
+        update_cache: yes
+      become_user: root
+      become: yes
+
+
+    # create 'csirt' user and add public key to that user
+
+
+    - name: '2.1 creating "csirt" user account'
+      user:
+        name: 'csirt'
+        # user password: 'nxjGXDYzmVwnH8GN'
+        password: '$6$JZCxUTGtPH5$GMMx93H2Vr8dqnbGD8m704sUxjnuVPgyb/4bUG/bKEKufpMd9UuhKMHYH.B2ilqtg4L4XP6hZO4hYV1bpWjL60'
+        state: 'present'
+        create_home: yes
+        home: '/home/csirt'
+      become_user: root
+      become: yes
+
+    - name: '2.2 adding SSH public key to "csirt" user'
+      authorized_key:
+        user: 'csirt'
+        # key password: 'q2NGAJjFxSCp5J28'
+        key: "{{ lookup('file', lookup('env','HOME') + '/.ssh/id_rsa.pub') }}" # <ROOT's HOME>/.ssh/id_rsa.pub
+      become_user: root
+      become: yes
+
+
+    # DROP ALL INCOMING network communication
+
+
+    - name: '2.3 restriction of SSH and HTTP to be accepted only from Masaryk University network (drop all income IPv4)'
+      iptables:
+        chain: INPUT
+        ip_version: 'ipv4'
+        policy: DROP
+      become_user: root
+      become: yes
+
+    - name: '2.3 restriction of SSH and HTTP to be accepted only from Masaryk University network (drop all income IPv6)'
+      iptables:
+        chain: INPUT
+        ip_version: 'ipv6'
+        policy: DROP
+      become_user: root
+      become: yes
+
+
+    # Masaryk University (MU) IPv4 address information
+    #
+    # https://www.fi.muni.cz/tech/unix/external-network.html.en
+    # https://apps.db.ripe.net/db-web-ui/#/query?searchtext=147.251.0.0%2F16#resultsSection
+    #
+    # List available rules for IPv4: /sbin/iptables --list-rules
+
+
+    # ACCEPT IPv4 SSH from MU
+    - name: '2.3 restriction of SSH and HTTP to be accepted only from Masaryk University network (allow specific IPv4 SSH income)'
+      iptables:
+        chain: INPUT
+        ip_version: 'ipv4'
+        protocol: 'tcp'
+        destination_port: '22'
+        source: '147.251.0.0/16'
+        jump: ACCEPT
+      become_user: root
+      become: yes
+
+    # ACCEPT IPv4 HTTP from MU
+    - name: '2.3 restriction of SSH and HTTP to be accepted only from Masaryk University network (allow specific IPv4 HTTP income)'
+      iptables:
+        chain: INPUT
+        ip_version: 'ipv4'
+        protocol: 'tcp'
+        destination_port: '80'
+        source: '147.251.0.0/16'
+        jump: ACCEPT
+      become_user: root
+      become: yes
+
+
+    # Masaryk University (MU) IPv6 address information
+    #
+    # https://www.fi.muni.cz/tech/unix/external-network.html.en
+    # https://apps.db.ripe.net/db-web-ui/#/query?searchtext=2001:718:801::%2F48#resultsSection
+    #
+    # List available rules for IPv6: /sbin/ip6tables --list-rules
+
+
+    # ACCEPT IPv6 SSH from MU
+    - name: '2.3 restriction of SSH and HTTP to be accepted only from Masaryk University network (allow specific IPv6 SSH income)'
+      iptables:
+        chain: INPUT
+        ip_version: 'ipv6'
+        protocol: tcp
+        destination_port: '22'
+        source: '2001:718:801::/48'
+        jump: ACCEPT
+      become_user: root
+      become: yes
+
+    # ACCEPT IPv6 HTTP from MU
+    - name: '2.3 restriction of SSH and HTTP to be accepted only from Masaryk University network (allow specific IPv6 HTTP income)'
+      iptables:
+        chain: INPUT
+        ip_version: 'ipv6'
+        protocol: tcp
+        destination_port: '80'
+        source: '2001:718:801::/48'
+        jump: ACCEPT
+      become_user: root
+      become: yes
+
+
+    # Persistent iptable rules
+    #
+    # apt-get install netfilter-persistent
+    # netfilter-persistent save
+    # https://github.com/ansible/ansible/issues/25149#issuecomment-305392514
+
+
+    # SAVE IP RULES
+    - name: '2.3 restriction of SSH and HTTP to be accepted only from Masaryk University network (save rules - persistent)'
+      command: netfilter-persistent save
+      become_user: root
+      become: true
