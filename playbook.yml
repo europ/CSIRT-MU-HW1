@@ -142,4 +142,4 @@
     - name: '2.3 restriction of SSH and HTTP to be accepted only from Masaryk University network (save rules - persistent)'
       command: netfilter-persistent save
       become_user: root
-      become: true
+      become: yes
