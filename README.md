@@ -2,6 +2,10 @@
 
 A simple homework for Ansible playbook.
 
+### Task
+
+The task can be found [here](https://github.com/europ/CSIRT-MU-HW1/blob/master/task.txt) in Czech.
+
 ### Prerequisites
 1. Debian GNU/Linux 9.9.0
     * [debian-live-9.9.0-amd64-gnome.iso](https://cdimage.debian.org/debian-cd/current-live/amd64/iso-hybrid/debian-live-9.9.0-amd64-gnome.iso)
